@@ -5,6 +5,12 @@ from priority_queue import MaxPriorityQueue, Order
 def make_order(oid, otype="mesa", priority=None):
     return Order(oid, "Test User", "Pizza", otype, priority)
 
+'''
+Order("A", "Test User", "Pizza", "mesa", 10)
+Order("B", "Test User", "Pizza", "mesa", 20)
+Order("C", "Test User", "Pizza", "express", 30)
+
+'''
 
 @pytest.fixture
 def pq():
