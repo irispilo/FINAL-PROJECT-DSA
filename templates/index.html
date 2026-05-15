@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title> Pizzería — Sistema de Órdenes</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+
+<header>
+  <h1> Pizzería — Cola de Órdenes</h1>
+  <span>{{ size }} orden{{ 'es' if size != 1 else '' }} en cola</span>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<main>
+
+  <!-- LEFT PANEL -->
+  <section class="panel">
+
+    <h2>Nueva orden</h2>
+    <form action="/add" method="POST">
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" name="customer" placeholder="Nombre del cliente" required/>
+      </div>
+      <div class="form-group">
+        <label>Ítems</label>
+        <input type="text" name="items" placeholder="Margherita, Pepsi" required/>
+      </div>
+      <div class="form-group">
+        <label>Tipo de orden</label>
+        <select name="order_type">
+          <option value="express">🔴 Express (prioridad alta)</option>
+          <option value="para_llevar">🟡 Para llevar (prioridad media)</option>
+          <option value="mesa">🟢 Mesa (prioridad normal)</option>
+        </select>
+      </div>
+      <button class="btn primary" type="submit">Agregar orden</button>
+    </form>
+
+    <hr/>
+
+    <h2>Despachar</h2>
+    <form action="/dispatch" method="POST">
+      <button class="btn success" type="submit">✅ Despachar siguiente</button>
+    </form>
+
+    <hr/>
+
+    <h2>Actualizar prioridad</h2>
+    <form action="/update_priority" method="POST">
+      <div class="form-group">
+        <label>ID de orden</label>
+        <input type="text" name="order_id" placeholder="ORD-001" required/>
+      </div>
+      <div class="form-group">
+        <label>Nueva prioridad</label>
+        <input type="number" name="priority" placeholder="50" min="1" required/>
+      </div>
+      <button class="btn" type="submit">Actualizar</button>
+    </form>
+
+    <hr/>
+
+    <h2>Cancelar orden</h2>
+    <form action="/cancel" method="POST">
+      <div class="form-group">
+        <label>ID de orden</label>
+        <input type="text" name="order_id" placeholder="ORD-001" required/>
+      </div>
+      <button class="btn danger" type="submit">🗑️ Cancelar</button>
+    </form>
+
+    <hr/>
+
+    <h2>Simular espera</h2>
+    <form action="/wait" method="POST">
+      <div class="form-group">
+        <label>Minutos a agregar</label>
+        <input type="number" name="minutes" value="5" min="1"/>
+      </div>
+      <button class="btn" type="submit">⏱️ Agregar espera</button>
+    </form>
+
+  </section>
+
+  <!-- RIGHT PANEL -->
+  <section class="panel">
+
+    <h2>
+      Cola actual
+      {% if next_order %}
+        <span class="badge">Siguiente: {{ next_order.order_id }}</span>
+      {% endif %}
+    </h2>
+
+    {% if orders %}
+      <div class="order-list">
+        {% for order in orders %}
+          <div class="order-card {{ 'top' if loop.first else '' }}">
+            <div>
+              <strong>{{ order.order_id }}</strong> — {{ order.customer }}
+              <div class="meta">{{ order.items }}</div>
+              <div class="meta">
+                {% if order.order_type == 'express' %}🔴 Express
+                {% elif order.order_type == 'para_llevar' %}🟡 Para llevar
+                {% else %}🟢 Mesa{% endif %}
+                · Espera: {{ order.wait_time }} min
+              </div>
+            </div>
+            <span class="priority-badge {{ 'top' if loop.first else '' }}">P: {{ order.priority }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">No hay órdenes en cola.</p>
+    {% endif %}
+
+    <h2 style="margin-top:2rem">Historial despachadas</h2>
+    {% if history %}
+      <div class="order-list muted">
+        {% for order in history %}
+          <div class="order-card">
+            <div>
+              <strong>{{ order.order_id }}</strong> — {{ order.customer }}
+              <div class="meta">{{ order.items }}</div>
+            </div>
+            <span class="priority-badge">P: {{ order.priority }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Sin historial aún.</p>
+    {% endif %}
+
+  </section>
+
+</main>
+</body>
+</html>
